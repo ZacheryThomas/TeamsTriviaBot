@@ -24,11 +24,7 @@ trivia_db = client.trivia
 questions_collection = trivia_db.questions
 rooms_collection = trivia_db.rooms
 
-BEARER = os.getenv('BEARER')
-MYID = os.getenv('MYID')
-API = TeamsApi(BEARER)
-
-MAX_QUESTION_VAL = 500
+MAX_QUESTION_VAL = 800
 ACCEPTED_CATEGORIES = ['SCIENCE', 'SCIENCE TERMS', 'STUPID ANSWERS', 'FOOD & DRINK', 'WORLD HISTORY', 'BRAND NAMES']
 
 MAX_MSG_LEN = 5000

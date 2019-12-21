@@ -132,7 +132,7 @@ def messages():
 
         text = f'''Welcome to Jeopardy!
 
-The category is {question['category']}
+The category is {question['category']} for ${question['value']}
 
 {question['question']}'''
 
@@ -183,7 +183,7 @@ The category is {question['category']}
 
 ${room_entry['currentQuestion']['value']} for {person_name}!
 
-The category is {question['category']}
+The category is {question['category']} for ${question['value']}
 
 {question['question']}
                 '''

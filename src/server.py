@@ -6,6 +6,7 @@ import os
 import json
 import time
 import threading
+import bson
 
 from pymongo import MongoClient
 from bottle import post, request, run
@@ -18,14 +19,14 @@ API = TeamsApi(BEARER)
 MONGO_USERNAME = os.getenv('MONGO_INITDB_ROOT_USERNAME')
 MONGO_PASSWORD = os.getenv('MONGO_INITDB_ROOT_PASSWORD')
 
-client = MongoClient('localhost', username=MONGO_USERNAME, password=MONGO_PASSWORD, port=27017)
+client = MongoClient('mongo', username=MONGO_USERNAME, password=MONGO_PASSWORD, port=27017)
 trivia_db = client.trivia
 
 questions_collection = trivia_db.questions
 rooms_collection = trivia_db.rooms
 
 MAX_QUESTION_VAL = 800
-ACCEPTED_CATEGORIES = ['SCIENCE', 'SCIENCE TERMS', 'STUPID ANSWERS', 'FOOD & DRINK', 'WORLD HISTORY', 'BRAND NAMES']
+ACCEPTED_CATEGORIES = [r'SCIENCE', r'FOOD', r'GAMES', r'BRAND', r'STUPID', r'TECH', r'COMPUTER']
 
 MAX_MSG_LEN = 5000
 TIMEOUT = 10 * 60 # ten min
@@ -84,14 +85,23 @@ def get_possible_answers(answer):
 
     if answer.endswith('s'):
         possible_answers.append(answer[:-1] + 'ies')
+
+    # try adding an s at the end
+    possible_answers.append(answer + 's')
+
     return possible_answers
 
 
 def randomQuestion():
+    formatted_regex = [ bson.Regex.from_native(re.compile(cat)) for cat in ACCEPTED_CATEGORIES ]
+    for index in range(len(formatted_regex)):
+        formatted_regex[index].flags ^= re.UNICODE
+
+    print(formatted_regex)
     q = random.choice(
         [doc for doc in questions_collection.find({
             'value': { '$lte': MAX_QUESTION_VAL },
-            'category': { '$in': ACCEPTED_CATEGORIES },
+            'category': { '$in': formatted_regex },
             'air_date': { '$gt': '2010-01-01' }
         })]
     )

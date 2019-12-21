@@ -11,7 +11,14 @@ from pymongo import MongoClient
 from bottle import post, request, run
 from teams_api import TeamsApi
 
-client = MongoClient('mongo', 27017)
+BEARER = os.getenv('BEARER')
+MYID = os.getenv('MYID')
+API = TeamsApi(BEARER)
+
+MONGO_USERNAME = os.getenv('MONGO_INITDB_ROOT_USERNAME')
+MONGO_PASSWORD = os.getenv('MONGO_INITDB_ROOT_PASSWORD')
+
+client = MongoClient('localhost', username=MONGO_USERNAME, password=MONGO_PASSWORD, port=27017)
 trivia_db = client.trivia
 
 questions_collection = trivia_db.questions

@@ -1,8 +1,12 @@
 import json
+import os
 
 from pymongo import MongoClient
 
-client = MongoClient()
+MONGO_USERNAME = os.getenv('MONGO_INITDB_ROOT_USERNAME')
+MONGO_PASSWORD = os.getenv('MONGO_INITDB_ROOT_PASSWORD')
+
+client = MongoClient('localhost', username=MONGO_USERNAME, password=MONGO_PASSWORD, port=27017)
 trivia_db = client.trivia
 
 questions_collection = trivia_db.questions

@@ -6,13 +6,18 @@ services:
       - ./src/:/src
     command: python3 -u /src/server.py
     environment:
-      - MYID=
-      - BEARER=
+      - MYID=${MYID}
+      - BEARER=${BEARER}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
     ports:
       - "81:80"
 
   mongo:
     image: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
       - "./mongo-volume:/data/db"
     ports:

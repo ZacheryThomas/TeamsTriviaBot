@@ -5,27 +5,31 @@ class TeamsApi(object):
         self.bearer = bearer
         self.headers = {"Authorization": "Bearer {}".format(self.bearer)}
 
-    def get_message(self, message_id):
-        """Calls message api to get text based on message_id"""
-        res = requests.get(url="https://api.ciscospark.com/v1/messages/{}".format(message_id),
-                           headers=self.headers)
-
-        print(res.json())
-        text = res.json()['text']
-
-        return text
-
 
     def send_message(self, text, room_id):
         """Sends message to api based on markdown and room_id"""
         res = requests.post(url="https://api.ciscospark.com/v1/messages",
                             headers=self.headers,
                             data={
-                                "text": text,
+                                "markdown": text,
                                 "roomId": room_id
                             })
 
         return res
+
+
+    def get_message(self, message_id):
+        """Calls message api to get text based on message_id"""
+        res = requests.get(url="https://api.ciscospark.com/v1/messages/{}".format(message_id),
+                           headers=self.headers)
+
+        try:
+            text = res.json()['text']
+        except AttributeError as e:
+            print(res.text)
+            return None
+
+        return text
 
 
     def get_room_name(self, room_id):
@@ -33,7 +37,11 @@ class TeamsApi(object):
         res = requests.get(url="https://api.ciscospark.com/v1/rooms/{}".format(room_id),
                            headers=self.headers)
 
-        room_name = res.json()['title']
+        try:
+            room_name = res.json()['title']
+        except AttributeError as e:
+            print(res.text)
+            return None
 
         return room_name
 
@@ -43,7 +51,10 @@ class TeamsApi(object):
         res = requests.get(url="https://api.ciscospark.com/v1/people/{}".format(person_id),
                            headers=self.headers)
 
-        print(res.json())
-        name = res.json()['firstName']
+        try:
+            name = res.json()['firstName']
+        except AttributeError as e:
+            print(res.text)
+            return None
 
         return name

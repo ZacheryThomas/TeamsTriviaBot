@@ -13,13 +13,14 @@ def messages():
     data = json.loads(request.body.read())['data']
 
     room_id = data['roomId']
+    room_type = data['roomType']
     person_id = data['personId']
     message_id = data['id']
 
     if person_id == MYID:
         return
 
-    game.tick(room_id, person_id, message_id)
+    game.tick(room_id, room_type, person_id, message_id)
     return
 
 

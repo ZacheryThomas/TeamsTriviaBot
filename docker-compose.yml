@@ -1,4 +1,4 @@
-version: "3.3"
+version: "2.4"
 services:
   server:
     build: ./
@@ -12,6 +12,8 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
     ports:
       - "81:80"
+    mem_limit: 50m
+    cpus: '0.25'
 
   mongo:
     image: mongo

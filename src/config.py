@@ -1,14 +1,16 @@
 __author__ = 'Zachery Thomas'
 
+MIN_DATE = '2000-01-01'
 MAX_QUESTION_VAL = 1000
+PREV_QUESTION_CACHE = 20
 
 ACCEPTED_CATEGORIES = [
     r'SCIENCE', r'FOOD', r'GAMES', r'BRAND',
     r'STUPID', r'TECH', r'COMPUTER', r'POTPOURRI',
     r'BIOLOGY', r'ALCOHOL', r'ALSO', r'ANIMAL',
-    r'AROUND', r'COMPANIES', r'CLASSICAL MUSIC', r'CUISINE',
+    r'COMPANIES', r'CLASSICAL MUSIC', r'CUISINE',
     r'LOGOS', r'MACHINE', r'SPACE', r'SYMBOLS',
-    r'WEATHER', r'WEAPON'
+    r'WEATHER', r'WEAPON', r'VEGETABLE'
 ]
 
 RIGHT_TEXT = [
@@ -31,5 +33,5 @@ WRONG_TEXT = [
     'Good guess, but not quite!',
     'Unfortunate...',
     'You fool! you utter nincompoop.',
-    'Sorry dumdum, you\'re wrong!',
+    'Sorry dumdum, you\'re wrong!'
 ]

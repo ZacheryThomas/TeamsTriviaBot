@@ -52,9 +52,11 @@ class TeamsApi(object):
                            headers=self.headers)
 
         try:
-            name = res.json()['firstName']
+            class person(object):
+                firstName = res.json()['firstName']
+                lastName = res.json()['lastName']
+
+            return person
         except AttributeError as e:
             print(res.text)
             return None
-
-        return name

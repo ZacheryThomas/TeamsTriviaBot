@@ -20,7 +20,7 @@ MONGO_PASSWORD = os.getenv('MONGO_INITDB_ROOT_PASSWORD')
 client = MongoClient('mongo', username=MONGO_USERNAME, password=MONGO_PASSWORD, port=27017)
 trivia_db = client.trivia
 
-questions_collection = trivia_db.questions
+clues_collection = trivia_db.clues
 rooms_collection = trivia_db.rooms
 
 def format_text(text):
@@ -51,6 +51,9 @@ def get_possible_answers(answer):
     if answer.endswith('s'):
         possible_answers.append(answer[:-1])
 
+    if answer.endswith('es'):
+        possible_answers.append(answer[:-2])
+
     if answer.endswith('ing'):
         possible_answers.append(answer[:-3])
 
@@ -80,16 +83,16 @@ def get_possible_answers(answer):
     return possible_answers
 
 
-def random_question(prev_questions):
+def random_clue(prev_clues):
     formatted_regex = [ bson.Regex.from_native(re.compile(cat)) for cat in config.ACCEPTED_CATEGORIES ]
     for index in range(len(formatted_regex)):
         formatted_regex[index].flags ^= re.UNICODE
 
     while True:
-        question = list(questions_collection.aggregate([
+        clue = list(clues_collection.aggregate([
                                                 {
                                                     '$match': {
-                                                        'value': { '$lte': config.MAX_QUESTION_VAL },
+                                                        'value': { '$lte': config.MAX_CLUE_VAL },
                                                         'category': { '$in': formatted_regex },
                                                         'air_date': { '$gt': config.MIN_DATE }
                                                     },
@@ -99,55 +102,40 @@ def random_question(prev_questions):
                                                 }
                                             ]))[0]
 
-        print('possible question:', question['question'])
+        print('possible clue:', clue['clue'])
 
-        if prev_questions is None:
-            return question
+        if prev_clues is None:
+            return clue
 
-        if question['_id'] in prev_questions:
+        if clue['_id'] in prev_clues:
             continue
 
-        # only word characters in answer
-        if re.search(r'[^a-zA-Z0-9_ ]', question['answer']):
+        # only word characters and spaces in answer
+        if re.search(r'[^a-zA-Z0-9_ ]', clue['answer']):
             continue
 
-        # no html in questions
-        if '<' in question['question'] or '>' in question['question']:
+        # no html in clues
+        if '<' in clue['clue'] or '>' in clue['clue']:
             continue
 
-        #get rid of starting and ending single quote from question text
-        question['question'] = question['question'][1:-1]
-        print('selected question:', question['question'])
-        return question
+        print('selected clue:', clue['clue'])
+        return clue
 
-def pp_question(question):
-    return f"The category is `{question['category']}` for `${question['value']}`:  \n" \
-           f"**{question['question']}**"
 
-def new_game(room_id):
-    question = random_question(None)
-    entry = {
-        'roomId': room_id,
-        'roomName': API.get_room_name(room_id),
-        'users': {},
-        'currentQuestion': question
-    }
+def pp_clue(clue):
+    comments = ""
+    if 'comments' in clue:
+        if clue['comments']:
+            comments = f"With this clue: {clue['comments'].split(':')[1][:-1]}  \n"
 
-    rooms_collection.insert_one(entry)
-
-    text = f'Welcome to Jeopardy!  \n' \
-           + pp_question(question)
-
-    API.send_message(text, room_id)
+    return f"The category is `{clue['category']}` for `${clue['value']}`:  \n" \
+           f"{comments}" \
+           f"**{clue['clue']}**"
 
 
 def special_commands(room_id, room_type, person_id, text, room_entry):
-    if text == '.debug':
-        API.send_message(str(room_entry), room_id)
-        return
-
-    if text == '.question':
-        API.send_message(pp_question(room_entry['currentQuestion']), room_id)
+    if text == '.clue':
+        API.send_message(pp_clue(room_entry['currentClue']), room_id)
         return
 
     if text == '.leaderboard':
@@ -185,14 +173,14 @@ def special_commands(room_id, room_type, person_id, text, room_entry):
                 API.send_message('Another person besides you must vote to skip.', room_id)
                 return
 
-        prev_questions = room_entry['previousQuestions'] + [room_entry['currentQuestion']['_id']] if 'previousQuestions' in room_entry else [room_entry['currentQuestion']['_id']]
-        if len(prev_questions) > config.PREV_QUESTION_CACHE:
-            prev_questions = prev_questions[-config.PREV_QUESTION_CACHE:]
+        prev_clues = room_entry['previousClues'] + [room_entry['currentClue']['_id']] if 'previousClues' in room_entry else [room_entry['currentClue']['_id']]
+        if len(prev_clues) > config.PREV_CLUE_CACHE:
+            prev_clues = prev_clues[-config.PREV_CLUE_CACHE:]
 
-        question = random_question(prev_questions)
+        clue = random_clue(prev_clues)
 
-        text = f"The correct answer for **{room_entry['currentQuestion']['question']}** is: `{room_entry['currentQuestion']['answer']}`\n\n" \
-               + pp_question(question)
+        text = f"The correct answer for **{room_entry['currentClue']['clue']}** is: `{room_entry['currentClue']['answer']}`\n\n" \
+               + pp_clue(clue)
 
         query = {
             "roomId": room_id
@@ -200,7 +188,7 @@ def special_commands(room_id, room_type, person_id, text, room_entry):
 
         newvalues = {
             '$set': {
-                'currentQuestion': question,
+                'currentClue': clue,
             },
             '$unset': {
                 'skipAttempt': person_id,
@@ -215,20 +203,42 @@ def special_commands(room_id, room_type, person_id, text, room_entry):
         return
 
 
-    text = '`.help` shows this screen  \n' \
-        '`.question` repeats the question  \n' \
-        '`.leaderboard` displays the leaderboard  \n' \
-        '`.skip` skips the question. no points recorded  \n'
+    text = '`.help` shows this output  \n' \
+           '`.clue` repeats the clue  \n' \
+           '`.leaderboard` displays the leaderboard  \n' \
+           '`.skip` skips the clue. no points recorded  \n'
+
+    API.send_message(text, room_id)
+
+
+def new_game(room_id):
+    clue = random_clue(None)
+    entry = {
+        'roomId': room_id,
+        'roomName': API.get_room_name(room_id),
+        'users': {},
+        'currentClue': clue
+    }
+
+    rooms_collection.insert_one(entry)
+
+    text = f'Welcome to Jeopardy!  \n' \
+           + pp_clue(clue)
 
     API.send_message(text, room_id)
 
 
 def right_answer(room_id, person_id, person_name, room_entry):
-    prev_questions = room_entry['previousQuestions'] + [room_entry['currentQuestion']['_id']] if 'previousQuestions' in room_entry else [room_entry['currentQuestion']['_id']]
-    if len(prev_questions) > config.PREV_QUESTION_CACHE:
-        prev_questions = prev_questions[-config.PREV_QUESTION_CACHE:]
+    prev_clues = []
+    if 'previousClues' in room_entry:
+        prev_clues = room_entry['previousClues'] + [room_entry['currentClue']['_id']]
+    else:
+        prev_clues = [room_entry['currentClue']['_id']]
 
-    question = random_question(prev_questions)
+    if len(prev_clues) > config.PREV_CLUE_CACHE:
+        prev_clues = prev_clues[-config.PREV_CLUE_CACHE:]
+
+    clue = random_clue(prev_clues)
 
     query = {
         "roomId": room_id
@@ -238,22 +248,23 @@ def right_answer(room_id, person_id, person_name, room_entry):
         score = room_entry['users'][person_id]['score']
     except KeyError:
         score = 0
-
+    score += room_entry['currentClue']['value']
 
     text = f"{random.choice(config.RIGHT_TEXT)}  \n" \
-        f"`${room_entry['currentQuestion']['value']}` for {person_name}!\n\n" \
-        + pp_question(question)
-
-    score += room_entry['currentQuestion']['value']
+           f"`${room_entry['currentClue']['value']}` for {person_name.firstName}!\n\n" \
+           + pp_clue(clue)
 
     newvalues = {
         '$set': {
-            'currentQuestion': question,
-            'previousQuestions': prev_questions,
+            'currentClue': clue,
+            'previousClues': prev_clues,
             f'users.{person_id}': {
                 'score': score,
-                'name': person_name
+                'name': f'{person_name.firstName} {person_name.lastName[0]}'
             }
+        },
+        '$unset': {
+            'skipAttempt': person_id,
         }
     }
 
@@ -263,16 +274,17 @@ def right_answer(room_id, person_id, person_name, room_entry):
 
     API.send_message(text, room_id)
 
-def wrong_answer(room_id, person_id, person_name, room_entry):
-    text = f"{random.choice(config.WRONG_TEXT)}\n\n" \
-        f"Subtract `${room_entry['currentQuestion']['value']}` from {person_name}"
+
+def wrong_answer(room_id, person_id, person_name, room_entry, closeness):
+    text = f"{random.choice(config.WRONG_TEXT) if closeness < 80 else random.choice(config.CLOSE_TEXT)}\n\n" \
+        f"Subtract `${room_entry['currentClue']['value']}` from {person_name.firstName}"
 
     try:
         score = room_entry['users'][person_id]['score']
     except KeyError:
         score = 0
 
-    score -= room_entry['currentQuestion']['value']
+    score -= room_entry['currentClue']['value']
 
     query = {
         "roomId": room_id
@@ -282,7 +294,7 @@ def wrong_answer(room_id, person_id, person_name, room_entry):
         '$set': {
             f'users.{person_id}': {
                 'score': score,
-                'name': person_name
+                'name': f'{person_name.firstName} {person_name.lastName[0]}'
             }
         }
     }
@@ -304,7 +316,7 @@ def tick(room_id, room_type, person_id, message_id):
         text = API.get_message(message_id).lower()
         text = format_text(text)
 
-        answer = room_entry['currentQuestion']['answer'].lower()
+        answer = room_entry['currentClue']['answer'].lower()
         possible_answers = get_possible_answers(answer)
         print('entered text:', text)
         print('answer:', possible_answers)
@@ -317,5 +329,10 @@ def tick(room_id, room_type, person_id, message_id):
             right_answer(room_id, person_id, person_name, room_entry)
 
         else:
+            import difflib
+
+            seq = difflib.SequenceMatcher(None, text, answer)
+            closeness = seq.ratio()*100
+
             person_name = API.get_person_name(person_id)
-            wrong_answer(room_id, person_id, person_name, room_entry)
+            wrong_answer(room_id, person_id, person_name, room_entry, closeness)

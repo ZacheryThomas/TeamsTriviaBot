@@ -12,7 +12,7 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
     ports:
       - "81:80"
-    mem_limit: 50m
+    mem_limit: 250m
     cpus: '0.25'
 
   mongo:

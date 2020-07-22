@@ -329,7 +329,7 @@ def tick(message, room, person):
     # print(person)
     try:
         room_entry = rooms_collection.find_one({'roomId': room.id})
-        message_text = message.text.lower()
+        message_text = format_text(message.text)
         what_to_send = None
 
         print('Workin on: ', WORKIN_ON)

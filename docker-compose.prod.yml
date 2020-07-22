@@ -1,4 +1,4 @@
-version: "2.4"
+version: '2'
 services:
   server:
     image: dockerhub.cisco.com/novum-dockerv2/jeopardy:${GO_REVISION_JEOPARDY}

@@ -207,7 +207,6 @@ def special_commands(message, room_entry):
 
         rooms_collection.update_one(query, newvalues)
 
-        del newvalues['$set']['previousClues']
         print(newvalues)
         return text
 
@@ -280,7 +279,6 @@ def right_answer(message, person, room_entry):
 
     rooms_collection.update_one(query, newvalues)
 
-    del newvalues['$set']['previousClues']
     print(newvalues)
 
     text = f"{random.choice(config.RIGHT_TEXT)}  \n" \
@@ -377,7 +375,7 @@ def tick(message, room, person):
         # create and reply to the message sent by a user
         WEBEX.api.messages.create(
             roomId = room.id,
-            markdown = 'ERROR! I need help!:  \n{}'.format(tb),
+            markdown = 'ERROR! I need help!:  \n```  \n{}```'.format(tb),
         )
         print('ERROR!!!')
         print(tb)

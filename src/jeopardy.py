@@ -138,10 +138,12 @@ def pp_clue(clue):
 
 
 def special_commands(message, room_entry):
-    if message.text == '.clue':
+    message_text = format_text(message.text)
+
+    if message_text == '.clue':
         return pp_clue(room_entry['currentClue'])
 
-    if message.text == '.leaderboard':
+    if message_text == '.leaderboard':
         leaderboard = [room_entry['users'][entry] for entry in room_entry['users']]
 
         leaderboard = sorted(leaderboard, key=lambda user: user['score'], reverse=True)
@@ -159,7 +161,7 @@ def special_commands(message, room_entry):
 
         return text
 
-    if message.text == '.skip':
+    if message_text == '.skip':
         if message.roomType == 'group':
             if not 'skipAttempt' in room_entry:
                 newvalues = {

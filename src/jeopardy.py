@@ -327,7 +327,7 @@ def tick(message, room, person):
     # print(person)
     try:
         room_entry = rooms_collection.find_one({'roomId': room.id})
-        message.text = format_text(message.text)
+        message_text = format_text(message.text)
         what_to_send = None
 
         print('Workin on: ', WORKIN_ON)
@@ -347,13 +347,13 @@ def tick(message, room, person):
         else:
             answer = room_entry['currentClue']['answer'].lower()
             possible_answers = get_possible_answers(answer)
-            print('entered text:', message.text)
+            print('entered text:', message_text)
             print('answer:', possible_answers)
 
-            if message.text.startswith('.'):
-                resp = special_commands(message.text, room_entry)
+            if message_text.startswith('.'):
+                resp = special_commands(message, room_entry)
 
-            elif message.text in possible_answers:
+            elif message_text in possible_answers:
                 resp = right_answer(message, person, room_entry)
 
             else:

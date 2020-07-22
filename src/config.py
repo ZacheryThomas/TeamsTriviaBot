@@ -8,7 +8,7 @@ ACCEPTED_CATEGORIES = [
     r'SCIENCE', r'FOOD', r'DRINK', r'GAMES', r'BRAND',
     r'STUPID', r'TECH', r'COMPUTER', r'POURRI',
     r'BIOLOGY', r'ALCOHOL', r'ALSO', r'ANIMAL',
-    r'COMPANIES', r'CLASSICAL MUSIC', r'CUISINE',
+    r'COMPANIES', r'CUISINE',
     r'LOGOS', r'MACHINE', r'SPACE', r'SYMBOLS',
     r'WEATHER', r'WEAPON', r'VEGETABLE', r'BODY',
     r'ANATOMY', r'LETTER WORDS', r'CARTOON', r'FRUIT',
@@ -28,7 +28,7 @@ RIGHT_TEXT = [
 
 CLOSE_TEXT = [
     'That answer was very close!',
-    'That answer was almost correct...'
+    'That answer was almost correct...',
     'Oooh, so close!',
     'Close guess, but not quite!',
     'Very close! Really close! Extremely close! But not right...'

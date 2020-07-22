@@ -2,7 +2,7 @@ version: '2'
 services:
   server:
     working_dir: /src
-    command: python3 -u jeopardy.py
+    command: python3 jeopardy.py
     environment:
       - MYID=${MYID}
       - BEARER=${BEARER}

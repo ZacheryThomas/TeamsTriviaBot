@@ -2,3 +2,7 @@ version: '2'
 services:
   server:
     image: dockerhub.cisco.com/novum-dockerv2/jeopardy:${GO_REVISION_JEOPARDY}
+
+  mongo:
+    volumes:
+      - jeopardy-data:/data/db/

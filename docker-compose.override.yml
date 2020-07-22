@@ -4,3 +4,9 @@ services:
     build: ./
     volumes:
       - ./src/:/src
+
+  mongo:
+    volumes:
+      - "./mongo-volume:/data/db"
+    ports:
+      - "27017:27017"

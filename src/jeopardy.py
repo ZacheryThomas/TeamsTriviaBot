@@ -247,7 +247,7 @@ def right_answer(message, person, room_entry):
     score = user.get('score', 0)
     totalGuesses = user.get('totalGuesses', 0)
     totalRight = user.get('totalRight', 0)
-    currentStreak = users.get('currentStreak', 0)
+    currentStreak = user.get('currentStreak', 0)
     bestStreak = user.get('bestStreak', 0)
 
     score += room_entry['currentClue']['value']

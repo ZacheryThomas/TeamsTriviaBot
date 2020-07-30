@@ -148,7 +148,7 @@ def special_commands(message, room_entry):
 
         leaderboard = sorted(leaderboard, key=lambda user: user['score'], reverse=True)
 
-        text = f'```\n{"Name:": <20}{"Score:": <10}Accuracy:\n'
+        text = f'```\n{"Name:": <20}{"Score:": <10}{"Accuracy:": <10}Best Streak:\n'
         for user in leaderboard:
             try:
                 acc = int(user['totalRight'] / user['totalGuesses'] * 100)
@@ -156,7 +156,11 @@ def special_commands(message, room_entry):
             except KeyError:
                 acc = 'N/A'
 
-            text += f'{user["name"]: <20}{user["score"]: <10}{acc}\n'
+            name = user.get('name', 'ERROR')
+            score = user.get('score', 0)
+            best_streak = user.get('bestStreak', 0)
+
+            text += f'{name: <20}{score: <10}{acc:<10}{best_streak}\n'
         text += '```'
 
         return text
@@ -243,10 +247,16 @@ def right_answer(message, person, room_entry):
     score = user.get('score', 0)
     totalGuesses = user.get('totalGuesses', 0)
     totalRight = user.get('totalRight', 0)
+    currentStreak = users.get('currentStreak', 0)
+    bestStreak = user.get('bestStreak', 0)
 
     score += room_entry['currentClue']['value']
     totalGuesses += 1
     totalRight += 1
+
+    currentStreak += 1
+    if currentStreak > bestStreak:
+        bestStreak = currentStreak
 
     prev_clues = []
     if 'previousClues' in room_entry:
@@ -271,7 +281,9 @@ def right_answer(message, person, room_entry):
                 'name': f'{person.displayName}',
                 'score': score,
                 'totalGuesses': totalGuesses,
-                'totalRight': totalRight
+                'totalRight': totalRight,
+                'currentStreak': currentStreak,
+                'bestStreak': bestStreak
             }
         },
         '$unset': {
@@ -298,6 +310,7 @@ def wrong_answer(message, person, room_entry, closeness):
     score = user.get('score', 0)
     totalGuesses = user.get('totalGuesses', 0)
     totalRight = user.get('totalRight', 0)
+    bestStreak = user.get('bestStreak', 0)
 
     score -= room_entry['currentClue']['value']
     totalGuesses += 1
@@ -309,10 +322,12 @@ def wrong_answer(message, person, room_entry, closeness):
     newvalues = {
         '$set': {
             f'users.{message.personId}': {
+                'name': f'{person.displayName}',
                 'score': score,
                 'totalGuesses': totalGuesses,
                 'totalRight': totalRight,
-                'name': f'{person.displayName}'
+                'currentStreak': 0,
+                'bestStreak': bestStreak
             }
         }
     }

@@ -148,7 +148,7 @@ def special_commands(message, room_entry):
 
         leaderboard = sorted(leaderboard, key=lambda user: user['score'], reverse=True)
 
-        text = f'```\n{"Name:": <20}{"Score:": <10}{"Accuracy:": <10}Best Streak:\n'
+        text = f'```\n{"Name:": <20}{"Score:": <50}{"Accuracy:": <10}Best Streak:\n'
         for user in leaderboard:
             try:
                 acc = int(user['totalRight'] / user['totalGuesses'] * 100)
@@ -160,7 +160,7 @@ def special_commands(message, room_entry):
             score = user.get('score', 0)
             best_streak = user.get('bestStreak', 0)
 
-            text += f'{name: <20}{score: <10}{acc:<10}{best_streak}\n'
+            text += f'{name: <20}{score: <15}{acc:<10}{best_streak}\n'
         text += '```'
 
         return text
